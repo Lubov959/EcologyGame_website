@@ -1,0 +1,167 @@
+{% extends 'main/base.html' %}
+
+{% block title %}
+Приветственная страница - TVcompany
+{% endblock %}
+
+{% block style %}
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f9f9f9;
+            color: #333;
+            line-height: 1.6;
+        }
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+        }
+        nav {
+            display: flex;
+            justify-content: center;
+align-items: center;
+            position: relative;
+        }
+        .nav-menu {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            gap: 40px;
+            color: white;
+            font-weight: 600;
+            font-size: 18px;
+            user-select: none;
+        }
+        .nav-menu li {
+            cursor: default;
+        }
+        .user-info {
+            position: absolute;
+            right: 20px;
+            color: white;
+            font-weight: 600;
+            font-size: 18px;
+            user-select: none;
+        }
+main {
+            max-width: 700px;
+            margin: 40px auto 60px;
+            padding: 0 20px;
+        }
+        h1 {
+            font-size: 2.4rem;
+            margin-bottom: 20px;
+            color: #234d20;
+            text-align: center;
+        }
+        form {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.05);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        label {
+            font-size: 1.1rem;
+            display: block;
+            margin-bottom: 15px;
+            cursor: pointer;
+color: #46592f;
+            user-select: none;
+        }
+        input[type="text"],
+        input[type="email"] {
+            width: 100%;
+            padding: 10px 8px;
+            font-size: 1rem;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            font-size: 1.15rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 15px;
+            user-select: none;
+            display: block;
+width: 100%;
+        }
+        button:hover {
+            background-color: #3b8e2d;
+        }
+        button:focus {
+            outline: 2px solid #2a5d1f;
+            outline-offset: 2px;
+        }
+        .flashes {
+            max-width: 600px;
+            margin: 0 auto 20px;
+            padding: 0;
+            list-style: none;
+        }
+        .flashes li {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+.flashes li.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .flashes li.warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+        .flashes li.danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+{% endblock %}
+
+{% block content %}
+    <div class="container mt-5">
+        <h1 class="text-center">Добро пожаловать, {{ current_user.login }}!</h1>
+
+        <div class="text-center my-4">
+            <h2>TVcompany</h2>
+            <p>Добро пожаловать на сайт компании <strong>TVcompany</strong>! Мы лидеры на рынке телевизионной рекламы, предоставляем уникальные возможности для наших рекламных агентов и менеджеров по продажам.</p>
+            <p>На нашем сайте вы можете эффективно управлять рекламными кампаниями, отслеживать доходы и взаимодействовать с клиентами. Ваши успехи — наша гордость!</p>
+        </div>
+
+        <div class="my-4">
+            <h3>Зачем вам этот сайт?</h3>
+            <p>Если вы агент, то этот сайт поможет вам:</p>
+            <ul>
+                <li><strong>Управлять рекламными сделками</strong> с клиентами.</li>
+                <li><strong>Вести отчетность</strong> по доходам и комиссионным.</li>
+                <li><strong>Получать отчеты</strong> по эффективности вашей работы и выполненным кампаниям.</li>
+            </ul>
+
+            <p>Если вы менеджер по продажам, то с помощью этого сайта вы сможете:</p>
+            <ul>
+                <li><strong>Мониторить работу агентов</strong> и отслеживать их результаты.</li>
+                <li><strong>Управлять процессом продаж</strong> и рекламных контрактов.</li>
+                <li><strong>Получать общие отчеты</strong> по доходам компании и эффективности всех агентов.</li>
+            </ul>
+        </div>
+
+        <div class="text-center my-4">
+            <p>Ваши успехи и достижения важны для нас! Присоединяйтесь к нашему успеху, помогая клиентам создавать лучшие рекламные кампании на телевидении!</p>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends 'main/base.html' %}
+
+{% block title %}
+{% if user %}
+Редактировать пользователя
+{% else %}
+Добавить нового пользователя
+{% endif %}
+{% endblock %}
+
+{% block content %}
+
+<div class="container mt-5">
+    <h2 class="mb-4">
+        {% if user %}
+        Редактировать пользователя
+        {% else %}
+        Добавить нового пользователя
+        {% endif %}
+    </h2>
+
+    <form action="" method="POST">
+         <div class="form-group">
+            <label for="mail">Почта:</label>
+            <input type="text" class="form-control" id="mail" name="login" value="{{ user.login if user else '' }}" required>
+        </div>
+        <div class="form-group">
+            <label for="login">Имя:</label>
+            <input type="text" class="form-control" id="login" name="login" value="{{ user.login if user else '' }}" required>
+        </div>
+
+        <div class="form-group">
+            <label for="password">Пароль:</label>
+            <input type="password" class="form-control" id="password" name="password" value="{{ user.password if user else '' }}" required>
+        </div>
+
+        <div class="form-group">
+            <label for="role_id">Роль:</label>
+            <select class="form-control" id="role_id" name="role_id" required>
+                {% for role in roles %}
+                <option value="{{ role.id }}" {% if user and user.role_id == role.id %}selected{% endif %}>{{ role.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+
+        <button type="submit" class="btn btn-primary">
+            {% if user %}
+            Обновить пользователя
+            {% else %}
+            Добавить пользователя
+            {% endif %}
+        </button>
+    </form>
+</div>
+
+{% endblock %}

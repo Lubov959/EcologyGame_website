@@ -1,3 +1,31 @@
 venv/
 __pychache__/
 migrations/
+.env
+
+.idea/
+.vscode/
+Thumbs.db
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Файлы тестов
+.coverage
+nosetests.xml
+*.cover
+*.log
+
+# Файлы, созданные инструментами сборки
+*.egg
+*.whl
+
+# Другие временные файлы
+*.tmp
+*.temp
+*.bak
+*.swp
+
+*.db  # Исключаем файлы базы данных
+/uploads/  # Исключаем загруженные файлы

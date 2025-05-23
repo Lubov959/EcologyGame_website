@@ -1,0 +1,393 @@
+{% extends 'main/base.html' %}
+
+{% block title %}
+{{ game_name }} - Интерактивный квиз
+{% endblock %}
+{% block style %}
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f9f9f9;
+            color: #333;
+            line-height: 1.6;
+        }
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+        }
+        nav {
+            display: flex;
+            justify-content: center;
+align-items: center;
+            position: relative;
+        }
+        .nav-menu {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            gap: 40px;
+            color: white;
+            font-weight: 600;
+            font-size: 18px;
+            user-select: none;
+        }
+        .nav-menu li {
+            cursor: default;
+        }
+        .user-info {
+            position: absolute;
+            right: 20px;
+            color: white;
+            font-weight: 600;
+            font-size: 18px;
+            user-select: none;
+        }
+main {
+            max-width: 700px;
+            margin: 40px auto 60px;
+            padding: 0 20px;
+        }
+        h1 {
+            font-size: 2.4rem;
+            margin-bottom: 20px;
+            color: #234d20;
+            text-align: center;
+        }
+        form {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.05);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        label {
+            font-size: 1.1rem;
+            display: block;
+            margin-bottom: 15px;
+            cursor: pointer;
+color: #46592f;
+            user-select: none;
+        }
+        input[type="text"],
+        input[type="email"] {
+            width: 100%;
+            padding: 10px 8px;
+            font-size: 1rem;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            font-size: 1.15rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 15px;
+            user-select: none;
+            display: block;
+width: 100%;
+        }
+        button:hover {
+            background-color: #3b8e2d;
+        }
+        button:focus {
+            outline: 2px solid #2a5d1f;
+            outline-offset: 2px;
+        }
+        .flashes {
+            max-width: 600px;
+            margin: 0 auto 20px;
+            padding: 0;
+            list-style: none;
+        }
+        .flashes li {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+.flashes li.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .flashes li.warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+        .flashes li.danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+.exit-button {
+    position: relative;
+    top: 20px;
+    left: 0;
+    background-color: #f44336;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-decoration: none;
+    font-weight: bold;
+    display: inline-block;
+    margin-top: 10px;
+}
+
+{% endblock %}
+
+
+{% block content %}
+<div id="quiz-container">
+    <h1 id="quiz-title">{{ game_name }}</h1>
+
+    <form id="quiz-form">
+        <p id="quiz-question"></p>
+        <div id="progress-text"></div>
+
+        <div id="answers-container"></div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
+            <a href="#" class="exit-button" id="exit-btn">Выйти</a>
+            <button type="submit">Ответить</button>
+        </div>
+    </form>
+
+    <div id="result-message"></div>
+    <div id="buttons-container">
+        <button id="restart-btn" style="display:none;">Начать заново</button>
+    </div>
+</div>
+
+
+<script>
+const quizData = {{ quiz_data | tojson }};
+let currentSceneId = {{ saved_scene }};
+const gameName = "{{ game_name }}";
+
+// Загружаем очки из localStorage или начинаем с 0
+let totalPoints = parseInt(localStorage.getItem("totalPoints")) || 0;
+
+function calculateStepFromSceneId(sceneId) {
+    let count = 1;
+    let visited = new Set();
+    let currentId = quizData.start_scene;
+
+    while (currentId && currentId !== sceneId && !visited.has(currentId)) {
+        visited.add(currentId);
+        const scene = quizData.scenes.find(s => s.id === currentId);
+        if (!scene) break;
+        const answer = scene.answers.find(a => a.next_scene && !visited.has(a.next_scene));
+        if (answer) {
+            currentId = answer.next_scene;
+            count++;
+        } else {
+            break;
+        }
+    }
+
+    return count;
+}
+
+function calculateTotalSteps() {
+    let count = 1;
+    let visited = new Set();
+    let currentId = quizData.start_scene;
+
+    while (currentId && !visited.has(currentId)) {
+        visited.add(currentId);
+        const scene = quizData.scenes.find(s => s.id === currentId);
+        if (!scene) break;
+
+        const next = scene.answers.find(a => a.next_scene && !visited.has(a.next_scene));
+        if (next && next.next_scene !== null) {
+            currentId = next.next_scene;
+            count++;
+        } else {
+            break;
+        }
+    }
+
+    return count;
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    let stepNumber = parseInt(localStorage.getItem("stepNumber"));
+    if (!stepNumber || isNaN(stepNumber)) {
+        stepNumber = calculateStepFromSceneId(currentSceneId);
+        localStorage.setItem("stepNumber", stepNumber);
+    }
+
+    const totalSteps = calculateTotalSteps();
+    const quizQuestion = document.getElementById("quiz-question");
+    const answersContainer = document.getElementById("answers-container");
+    const quizForm = document.getElementById("quiz-form");
+    const progressText = document.getElementById("progress-text");
+    const resultMessage = document.getElementById("result-message");
+    const restartBtn = document.getElementById("restart-btn");
+    const exitBtn = document.getElementById("exit-btn");
+
+    function renderScene(sceneId) {
+        const scene = quizData.scenes.find(s => s.id === sceneId);
+        if (!scene) {
+            quizQuestion.textContent = "Сцена не найдена.";
+            return;
+        }
+
+        quizQuestion.textContent = scene.question;
+        progressText.textContent = `Вопрос ${stepNumber} из ${totalSteps}`;
+        answersContainer.innerHTML = "";
+
+        scene.answers.forEach((answer, index) => {
+            const label = document.createElement("label");
+            label.innerHTML = `
+                <input type="radio" name="answer" value="${index}" required>
+                ${answer.text}
+            `;
+            answersContainer.appendChild(label);
+        });
+    }
+
+    // Обработчик отправки формы (выбор ответа)
+quizForm.addEventListener("submit", function (e) {
+    e.preventDefault();
+    const selectedInput = document.querySelector('input[name="answer"]:checked');
+    if (!selectedInput) {
+        resultMessage.textContent = "Выберите ответ.";
+        return;
+    }
+
+    const selectedIndex = parseInt(selectedInput.value);
+    const scene = quizData.scenes.find(s => s.id === currentSceneId);
+    if (!scene || !scene.answers[selectedIndex]) {
+        resultMessage.textContent = "Ошибка: неверные данные.";
+        return;
+    }
+
+    const answer = scene.answers[selectedIndex];
+    const nextSceneId = answer.next_scene;
+    totalPoints += answer.points || 0;
+    localStorage.setItem("totalPoints", totalPoints);
+
+    if (nextSceneId) {
+        // Сохраняем прогресс
+        fetch("/Iquiz/save_progress", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                game_name: gameName,
+                current_scene: nextSceneId,
+                total_points: totalPoints,
+                type_id: 2
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.message) {
+                currentSceneId = nextSceneId;
+                stepNumber++;
+                localStorage.setItem("stepNumber", stepNumber);
+                renderScene(currentSceneId);
+            } else {
+                resultMessage.textContent = "Не удалось сохранить прогресс.";
+            }
+        })
+        .catch(error => {
+            console.error("Ошибка:", error);
+            resultMessage.textContent = "Ошибка при соединении с сервером.";
+        });
+
+    } else {
+        // Квиз завершён — сохраняем прогресс и завершение
+        fetch("/Iquiz/save_progress", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                game_name: gameName,
+                current_scene: null,
+                total_points: totalPoints,
+                type_id: 2,
+                end_game: true  // Завершаем игру
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.redirect) {
+                // Очищаем localStorage и переходим к результату
+                localStorage.removeItem("stepNumber");
+                localStorage.removeItem("totalPoints");
+                window.location.href = data.redirect;
+            } else {
+                resultMessage.textContent = "Не удалось завершить квиз.";
+            }
+        })
+        .catch(error => {
+            console.error("Ошибка завершения:", error);
+            resultMessage.textContent = "Ошибка при завершении квиза.";
+        });
+    }
+});
+
+
+    exitBtn.addEventListener("click", function (e) {
+        e.preventDefault();
+        localStorage.removeItem("stepNumber");
+        localStorage.removeItem("totalPoints");
+
+        fetch("/Iquiz/exit", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                game_name: gameName,
+                current_scene: currentSceneId,
+                total_points: totalPoints,
+                type_id: 2
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.redirect) {
+                window.location.href = data.redirect;
+            } else {
+                alert("Не удалось сохранить прогресс.");
+            }
+        })
+        .catch(error => {
+            console.error("Ошибка:", error);
+            alert("Ошибка при соединении с сервером.");
+        });
+    });
+
+    restartBtn.addEventListener("click", () => {
+        currentSceneId = quizData.start_scene || 1;
+        stepNumber = 1;
+        totalPoints = 0;
+        localStorage.setItem("stepNumber", stepNumber);
+        localStorage.setItem("totalPoints", totalPoints);
+        renderScene(currentSceneId);
+        restartBtn.style.display = "none";
+    });
+
+    renderScene(currentSceneId);
+});
+</script>
+
+{% endblock %}

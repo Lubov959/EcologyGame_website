@@ -1,0 +1,213 @@
+{% extends 'main/base.html' %}
+
+{% block title %}
+{{ game_name }} - Вопрос
+{% endblock %}
+{% block style %}
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f9f9f9;
+            color: #333;
+            line-height: 1.6;
+        }
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+        }
+        nav {
+            display: flex;
+            justify-content: center;
+align-items: center;
+            position: relative;
+        }
+        .nav-menu {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            gap: 40px;
+            color: white;
+            font-weight: 600;
+            font-size: 18px;
+            user-select: none;
+        }
+        .nav-menu li {
+            cursor: default;
+        }
+        .user-info {
+            position: absolute;
+            right: 20px;
+            color: white;
+            font-weight: 600;
+            font-size: 18px;
+            user-select: none;
+        }
+main {
+            max-width: 700px;
+            margin: 40px auto 60px;
+            padding: 0 20px;
+        }
+        h1 {
+            font-size: 2.4rem;
+            margin-bottom: 20px;
+            color: #234d20;
+            text-align: center;
+        }
+        form {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.05);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        label {
+            font-size: 1.1rem;
+            display: block;
+            margin-bottom: 15px;
+            cursor: pointer;
+color: #46592f;
+            user-select: none;
+        }
+        input[type="text"],
+        input[type="email"] {
+            width: 100%;
+            padding: 10px 8px;
+            font-size: 1rem;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            font-size: 1.15rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 15px;
+            user-select: none;
+            display: block;
+width: 100%;
+        }
+        button:hover {
+            background-color: #3b8e2d;
+        }
+        button:focus {
+            outline: 2px solid #2a5d1f;
+            outline-offset: 2px;
+        }
+        .flashes {
+            max-width: 600px;
+            margin: 0 auto 20px;
+            padding: 0;
+            list-style: none;
+        }
+        .flashes li {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+.flashes li.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .flashes li.warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+        .flashes li.danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        {% if quiz_finished %}
+            <h1>Вы уже прошли квиз на тему: {{ game_name }}</h1>
+            <p>Вы набрали {{ total_points }} баллов. Хотите пройти квиз заново?</p>
+            <button id="restart-passed-btn" class="btn">Пройти заново</button>
+            <a href="{{ url_for('main.show') }}" class="btn">На главную</a>
+        {% else %}
+            <h1>Вы хотите продолжить квиз на тему: {{ game_name }}?</h1>
+            <p>У вас есть сохраненный прогресс. Вы хотите продолжить с последней сцены или начать заново?</p>
+            <button id="continue-btn" class="btn">Продолжить</button>
+            <button id="restart-progress-btn" class="btn">Начать заново</button>
+        {% endif %}
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const continueBtn = document.getElementById('continue-btn');
+            const restartPassedBtn = document.getElementById('restart-passed-btn');
+            const restartProgressBtn = document.getElementById('restart-progress-btn');
+
+            if (continueBtn) {
+                continueBtn.addEventListener("click", () => {
+                    fetch("/Iquiz/continue", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            game_name: "{{ game_name }}",
+                            action: "continue"
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            window.location.href = data.redirect_url;
+                        } else {
+                            alert("Не удалось продолжить квиз");
+                        }
+                    })
+                    .catch(error => alert("Ошибка: " + error));
+                });
+            }
+
+            const handleRestart = () => {
+                fetch("/Iquiz/continue", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        game_name: "{{ game_name }}",
+                        action: "restart"
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        localStorage.removeItem("stepNumber");
+                        localStorage.removeItem("totalPoints");
+                        window.location.href = data.redirect_url;
+                    } else {
+                        alert("Не удалось начать заново");
+                    }
+                })
+                .catch(error => alert("Ошибка: " + error));
+            };
+
+            if (restartPassedBtn) {
+                restartPassedBtn.addEventListener("click", handleRestart);
+            }
+
+            if (restartProgressBtn) {
+                restartProgressBtn.addEventListener("click", handleRestart);
+            }
+        });
+    </script>
+{% endblock %}
